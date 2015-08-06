@@ -21,6 +21,8 @@ xtest('.stringify()', function() {
     console.log(isEquals(myJSON.stringify(/hoge/gim), prefix + 'RegExp(/hoge/gim)'));
     console.log(isEquals(myJSON.stringify(/hoge/), prefix + 'RegExp(/hoge/)'));
     console.log(isEquals(myJSON.stringify(new RegExp('hoge','gim')), prefix + 'RegExp(/hoge/gim)'));
+    console.log(isEquals(myJSON.stringify({}), prefix + '{}'));
+    console.log(isEquals(myJSON.stringify({hoge:'fuga'}), prefix + '{"hoge":"fuga"}'));
 });
 
 xtest('.parse()', function() {
@@ -36,6 +38,9 @@ xtest('.parse()', function() {
     console.log(isEquals(myJSON.parse(prefix + 'undefined'), undefined));
     console.log(isEquals(myJSON.parse(prefix + 'RegExp(/hoge/gim)'), /hoge/gim));
     console.log(isEquals(myJSON.parse(prefix + 'RegExp(/hoge/)'), /hoge/));
+    console.log(isEquals(myJSON.parse(prefix + '{}'), {}));
+    console.log(isEquals(myJSON.parse(prefix + '{"hoge":"fuga"}'), {hoge:'fuga'}));
+    console.log(isEquals(myJSON.parse(prefix + '{"hoge":"fuga","fuga":true,"three":3}'), {hoge:'fuga',fuga:true,three:3}));
 });
 
 
@@ -68,5 +73,7 @@ xtest('Identify', function() {
     console.log(isEquals(myJSON.parse(myJSON.stringify(/hoge/gim)), /hoge/gim));
     console.log(isEquals(myJSON.parse(myJSON.stringify(/hoge/)), /hoge/));
     console.log(isEquals(myJSON.parse(myJSON.stringify(new RegExp('hoge','gim'))), /hoge/gim));
+    console.log(isEquals(myJSON.parse(myJSON.stringify({})), {}));
+    console.log(isEquals(myJSON.parse(myJSON.stringify({hoge:'fuga'})), {hoge:'fuga'}));
 
 });

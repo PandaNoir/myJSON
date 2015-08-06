@@ -29,7 +29,7 @@ myJSON.stringify = function(obj, nest) {
     }else if (isObject(obj)) {
         var properties = [];
         for (var key in obj) {
-            properties.push('' + key + ':' + myJSON.stringify(obj));
+            properties.push('"' + key + '":' + myJSON.stringify(obj[key], nest + 1));
         }
         res = '{' + properties.join(',') + '}';
     }
@@ -43,20 +43,6 @@ myJSON.parse = function(s) {
     var Any = Parsimmon.lazy(function(){
         return alt(_Array, _Object, _Number, _String, _Date, _Boolean, _RegExp);
     });
-    var _Array = seq(
-            string('['), seq(
-                Any,
-                seq(string(','), Any).map(function(_){
-                    return _[1];
-                }).many()
-            ).optional(), string(']')
-        ).map(function(_) {
-            if (_[1].length === 0) {
-                return [];
-            }
-            return [_[1][0][0]].concat(_[1][0][1]);
-        });
-    var _Object = seq(string('{'), seq(_String,string(':'), Any).many(), string('}'));
     var _Number = alt(
             string('Infinity').result(Infinity),
             string('NaN').result(NaN),
@@ -88,6 +74,35 @@ myJSON.parse = function(s) {
         var date = new Date(_.slice(2,-1).join(''));
         return date;
     });//YYYY-MM-DDTHH:mm:ss.sssZ
+    var _Array = seq(
+            string('['), seq(
+                Any,
+                seq(string(','), Any).map(function(_){
+                    return _[1];
+                }).many()
+            ).optional(), string(']')
+        ).map(function(_) {
+            if (_[1].length === 0) {
+                return [];
+            }
+            return [_[1][0][0]].concat(_[1][0][1]);
+        });
+    var _Object = seq(string('{'),
+          seq(
+              _String, string(':'), Any,
+              seq(string(','), _String, string(':'), Any).map(function(_) {return _.slice(1);}).many()
+          ).map(function(_) {
+              // [[_String, string(':'), Any]].concat( seq(string(','), ...) )
+              return [[_[0], _[1], _[2]]].concat(_[3]);
+          }).optional(), string('}')).map(function(_) {
+              var obj = {};
+              if (_[1].length === 0) return {};
+              var properties = _[1][0];
+              for (var i = 0, _i = properties.length; i < _i; i=0|i+1) {
+                  obj[properties[i][0]] = properties[i][2];
+              }
+              return obj;
+          });
     return Any.parse(s).value;
 };
 function isArray(arr) {return getType(arr) === '[object Array]';};
